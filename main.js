@@ -49,12 +49,12 @@ if (!localStorage.getItem('bv_demo_installed_v1')) {
             { catId: 'bracelets', title: 'Браслети', img: 'https://images.unsplash.com/photo-1611591437281-460bfbe1220a?q=80&w=800' },
             { catId: 'chains', title: 'Ланцюжки', img: 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?q=80&w=800' },
             { catId: 'wedding', title: 'Обручки', img: 'https://images.unsplash.com/photo-1583939003579-730e3918a45a?q=80&w=800' },
-            { catId: 'crosses', title: 'Хрестики', img: 'https://images.unsplash.com/photo-1599643477877-530eb83abc8e?q=80&w=800' }
+            { catId: 'crosses', title: 'Хрестики', img: 'https://energyprom.kz/wp-content/uploads/2023/10/nvidia_share_n7tt9hyzpa-min.png' }
         ]
     };
 
     const demoSettings = {
-        heroBg: 'https://images.unsplash.com/photo-1603561591411-071c4f75393c?q=80&w=1920',
+        heroBg: 'https://energyprom.kz/wp-content/uploads/2023/10/nvidia_share_n7tt9hyzpa-min.png',
         phone: '+38 063 45 40 901', tgLink: 'https://t.me/bv_jewelry_izmail', instLink: 'https://instagram.com/bv_jewelry',
         addr1: 'м. Ізмаїл, вул. Торгова, 68', map1: 'https://share.google/R7G0tiXeqXrx98Uhi',
         addr2: 'м. Ізмаїл, вул. Покровська, 57', map2: 'https://share.google/4fE0MoAJwCdCr4igT'
