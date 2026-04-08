@@ -1,10 +1,23 @@
 // ==========================================
-// 1. БАЗОВІ ДАНІ ТА ЛОКАЛІЗАЦІЯ
+// 1. API ФАСАД (Готовий до переходу на бекенд)
+// ==========================================
+const API = {
+    get: (key, def) => {
+        try {
+            const d = localStorage.getItem(key);
+            return d ? JSON.parse(d) : def;
+        } catch (e) { return def; }
+    },
+    set: (key, val) => localStorage.setItem(key, JSON.stringify(val))
+};
+
+// ==========================================
+// 2. БАЗОВІ ДАНІ ТА ЛОКАЛІЗАЦІЯ
 // ==========================================
 const i18n = {
-    uk: { m1: "Головна", m2: "Каталог", m4: "Контакти", m_order: "Замовити", m_atelier: "Замовити ексклюзив", cart_title: "Кошик", cart_subtotal: "Підсумок:", cart_checkout: "Оформити замовлення", cart_empty: "Ваш кошик порожній", in_stock: "В наявності", out_stock: "Немає в наявності", pre_order: "Під замовлення", login: "Увійти", register: "Зареєструватися", login_mob_title: "КАБІНЕТ", theme_mob: "Змінити тему" },
-    en: { m1: "Home", m2: "Catalog", m4: "Contacts", m_order: "Order", m_atelier: "Order Exclusive", cart_title: "Cart", cart_subtotal: "Subtotal:", cart_checkout: "Checkout", cart_empty: "Your cart is empty", in_stock: "In stock", out_stock: "Out of stock", pre_order: "Pre-order", login: "Log in", register: "Register", login_mob_title: "PROFILE", theme_mob: "Change Theme" },
-    ru: { m1: "Главная", m2: "Каталог", m4: "Контакты", m_order: "Заказать", m_atelier: "Заказать эксклюзив", cart_title: "Корзина", cart_subtotal: "Итого:", cart_checkout: "Оформить заказ", cart_empty: "Ваша корзина пуста", in_stock: "В наличии", out_stock: "Нет в наличии", pre_order: "Под заказ", login: "Войти", register: "Регистрация", login_mob_title: "КАБИНЕТ", theme_mob: "Сменить тему" }
+    uk: { m1: "Головна", m2: "Каталог", m4: "Контакти", m_order: "Замовити", m_atelier: "Замовити ексклюзив", cart_title: "Кошик", cart_subtotal: "Підсумок:", cart_checkout: "Оформити замовлення", cart_empty: "Ваш кошик порожній", in_stock: "В наявності", out_stock: "Немає", pre_order: "Під замовлення", login: "Увійти", register: "Зареєструватися", login_mob_title: "КАБІНЕТ", theme_mob: "Змінити тему", fav_title: "Улюблене", fav_empty: "Список порожній", btn_buy: "Купити", similar: "Також рекомендуємо", desc_title: "Опис виробу", search_ph: "Пошук..." },
+    en: { m1: "Home", m2: "Catalog", m4: "Contacts", m_order: "Order", m_atelier: "Order Exclusive", cart_title: "Cart", cart_subtotal: "Subtotal:", cart_checkout: "Checkout", cart_empty: "Your cart is empty", in_stock: "In stock", out_stock: "N/A", pre_order: "Pre-order", login: "Log in", register: "Register", login_mob_title: "PROFILE", theme_mob: "Change Theme", fav_title: "Favorites", fav_empty: "List is empty", btn_buy: "Buy", similar: "You might also like", desc_title: "Description", search_ph: "Search..." },
+    ru: { m1: "Главная", m2: "Каталог", m4: "Контакты", m_order: "Заказать", m_atelier: "Заказать эксклюзив", cart_title: "Корзина", cart_subtotal: "Итого:", cart_checkout: "Оформить заказ", cart_empty: "Ваша корзина пуста", in_stock: "В наличии", out_stock: "Нет", pre_order: "Под заказ", login: "Войти", register: "Регистрация", login_mob_title: "КАБИНЕТ", theme_mob: "Сменить тему", fav_title: "Избранное", fav_empty: "Список пуст", btn_buy: "Купить", similar: "Также рекомендуем", desc_title: "Описание изделия", search_ph: "Поиск..." }
 };
 const flags = { uk: "ua", en: "gb", ru: "ru" };
 
@@ -13,43 +26,61 @@ const moonSVG = `<path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>`;
 const formatterPrice = new Intl.NumberFormat('uk-UA', { style: 'currency', currency: 'UAH', maximumFractionDigits: 0 });
 
 // ==========================================
-// 2. ГЕНЕРАТОР ДЕМО-ДАНИХ (ЗАПОВНЕННЯ САЙТУ)
+// 3. ГЕНЕРАТОР ДЕМО-ДАНИХ
 // ==========================================
-if (!localStorage.getItem('bv_demo_installed_v1')) {
+if (!API.get('bv_demo_installed_v2')) {
     const demoCats = [
-        { id: 'rings', name: 'Каблучки', subcategories: [{id: 'engagement', name: 'Для заручин'}, {id: 'wedding', name: 'Обручки'}, {id: 'diamonds', name: 'З діамантами'}] },
-        { id: 'earrings', name: 'Сережки', subcategories: [{id: 'studs', name: 'Пусети'}, {id: 'long', name: 'Довгі підвіски'}] },
-        { id: 'chains', name: 'Ланцюжки', subcategories: [{id: 'womens', name: 'Жіночі'}, {id: 'mens', name: 'Чоловічі масивні'}] },
-        { id: 'bracelets', name: 'Браслети', subcategories: [{id: 'hard', name: 'Жорсткі'}, {id: 'chain', name: 'Ланцюжкові'}] },
-        { id: 'crosses', name: 'Хрестики', subcategories: [{id: 'classic', name: 'Класичні'}, {id: 'decorative', name: 'Декоративні'}] }
+        { id: 'rings', name: 'Каблучки', subcategories: [{id: 'engagement', name: 'Для заручин'}, {id: 'wedding', name: 'Обручки'}] },
+        { id: 'earrings', name: 'Сережки', subcategories: [{id: 'studs', name: 'Пусети'}] },
+        { id: 'chains', name: 'Ланцюжки', subcategories: [] },
+        { id: 'bracelets', name: 'Браслети', subcategories: [] },
+        { id: 'crosses', name: 'Хрестики', subcategories: [] }
     ];
 
-    const demoProducts = [
-        // Каблучки
-        { id: 'p1', name: 'Каблучка "Вічність" з діамантом', variant: 'Біле золото 585', category: 'rings', subcategory: 'engagement', price: 45000, discount: '', status: 'in-stock', badge: 'exclusive', featured: true, img: 'https://images.unsplash.com/photo-1605100804763-247f67b3557e?q=80&w=800' },
-        { id: 'p2', name: 'Обручка класична 4мм', variant: 'Жовте золото 585', category: 'rings', subcategory: 'wedding', price: 12500, discount: 9500, status: 'in-stock', badge: 'sale', featured: true, img: 'https://images.unsplash.com/photo-1583939003579-730e3918a45a?q=80&w=800' },
-        { id: 'p3', name: 'Каблучка-доріжка', variant: 'Рожеве золото 585', category: 'rings', subcategory: 'diamonds', price: 28000, discount: '', status: 'pre-order', badge: 'new', featured: false, img: 'https://images.unsplash.com/photo-1603561591411-071c4f75393c?q=80&w=800' },
-        // Сережки
-        { id: 'p4', name: 'Пусети з сапфірами', variant: 'Біле золото 585', category: 'earrings', subcategory: 'studs', price: 18000, discount: '', status: 'in-stock', badge: 'none', featured: true, img: 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?q=80&w=800' },
-        { id: 'p5', name: 'Довгі сережки-протяжки', variant: 'Жовте золото 585', category: 'earrings', subcategory: 'long', price: 15400, discount: 13000, status: 'in-stock', badge: 'sale', featured: true, img: 'https://plus.unsplash.com/premium_photo-1681276170683-706111aee6cb?q=80&w=800' },
-        // Ланцюжки
-        { id: 'p6', name: 'Ланцюжок "Сінгапур"', variant: 'Червоне золото 585', category: 'chains', subcategory: 'womens', price: 8500, discount: '', status: 'in-stock', badge: 'none', featured: true, img: 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?q=80&w=800' },
-        { id: 'p7', name: 'Масивний Бісмарк 65см', variant: 'Жовте золото 585', category: 'chains', subcategory: 'mens', price: 55000, discount: '', status: 'out-stock', badge: 'exclusive', featured: true, img: 'https://images.unsplash.com/photo-1599643477877-530eb83abc8e?q=80&w=800' },
-        // Браслети
-        { id: 'p8', name: 'Жорсткий браслет Cartier Style', variant: 'Жовте золото 585', category: 'bracelets', subcategory: 'hard', price: 32000, discount: '', status: 'pre-order', badge: 'new', featured: true, img: 'https://images.unsplash.com/photo-1611591437281-460bfbe1220a?q=80&w=800' },
-        // Хрестики
-        { id: 'p9', name: 'Хрестик з емаллю', variant: 'Комбіноване золото', category: 'crosses', subcategory: 'decorative', price: 9200, discount: 8000, status: 'in-stock', badge: 'sale', featured: true, img: 'https://images.unsplash.com/photo-1597561847167-73d8463e2612?q=80&w=800' }
+    const demoImages = [
+        'https://images.unsplash.com/photo-1605100804763-247f67b3557e?q=80&w=800',
+        'https://images.unsplash.com/photo-1583939003579-730e3918a45a?q=80&w=800',
+        'https://images.unsplash.com/photo-1603561591411-071c4f75393c?q=80&w=800',
+        'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?q=80&w=800',
+        'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?q=80&w=800',
+        'https://images.unsplash.com/photo-1611591437281-460bfbe1220a?q=80&w=800'
     ];
+
+    const demoProducts = [];
+    const metals = ['Біле золото 585', 'Жовте золото 585', 'Червоне золото 585', 'Срібло 925'];
+    
+    for (let i = 1; i <= 50; i++) {
+        const catObj = demoCats[i % demoCats.length];
+        const isSale = i % 7 === 0;
+        const price = Math.round((Math.random() * 45000 + 3000) / 100) * 100;
+        
+        demoProducts.push({
+            id: `p${i}`,
+            name: `${catObj.name} преміум #${i}`,
+            variant: metals[i % metals.length],
+            category: catObj.id,
+            subcategory: catObj.subcategories.length > 0 ? catObj.subcategories[0].id : '',
+            price: isSale ? Math.round(price * 0.8) : price, 
+            discount: isSale ? price : '', 
+            status: i % 12 === 0 ? 'out-stock' : (i % 9 === 0 ? 'pre-order' : 'in-stock'),
+            badge: i % 6 === 0 ? 'new' : (isSale ? 'sale' : (i % 8 === 0 ? 'exclusive' : 'none')),
+            isSpecial: i <= 8, 
+            isWeekly: i > 8 && i <= 16, 
+            featured: i % 5 === 0, 
+            img: demoImages[i % demoImages.length],
+            desc: "Вишуканий ювелірний виріб ручної роботи. Ідеально підкреслить ваш стиль та індивідуальність. Виконано з найвищою увагою до деталей та використанням преміальних матеріалів."
+        });
+    }
 
     const demoCollage = {
         template: 'grid-6',
         items: [
-            { catId: 'rings', title: 'Каблучки', img: 'https://images.unsplash.com/photo-1605100804763-247f67b3557e?q=80&w=800' },
-            { catId: 'earrings', title: 'Сережки', img: 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?q=80&w=800' },
-            { catId: 'bracelets', title: 'Браслети', img: 'https://images.unsplash.com/photo-1611591437281-460bfbe1220a?q=80&w=800' },
-            { catId: 'chains', title: 'Ланцюжки', img: 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?q=80&w=800' },
-            { catId: 'wedding', title: 'Обручки', img: 'https://images.unsplash.com/photo-1583939003579-730e3918a45a?q=80&w=800' },
-            { catId: 'crosses', title: 'Хрестики', img: 'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?q=80&w=1920' }
+            { catId: 'rings', title: 'Каблучки', img: demoImages[0] },
+            { catId: 'earrings', title: 'Сережки', img: demoImages[3] },
+            { catId: 'bracelets', title: 'Браслети', img: demoImages[5] },
+            { catId: 'chains', title: 'Ланцюжки', img: demoImages[4] },
+            { catId: 'rings', title: 'Обручки', img: demoImages[1] },
+            { catId: 'crosses', title: 'Ексклюзив', img: demoImages[2] }
         ]
     };
 
@@ -60,30 +91,79 @@ if (!localStorage.getItem('bv_demo_installed_v1')) {
         addr2: 'м. Ізмаїл, вул. Покровська, 57', map2: 'https://share.google/4fE0MoAJwCdCr4igT'
     };
 
-    localStorage.setItem('bv_categories_tree', JSON.stringify(demoCats));
-    localStorage.setItem('bv_products', JSON.stringify(demoProducts));
-    localStorage.setItem('bv_collage_config', JSON.stringify(demoCollage));
-    localStorage.setItem('bv_settings', JSON.stringify(demoSettings));
-    localStorage.setItem('bv_demo_installed_v1', 'true');
+    API.set('bv_categories_tree', demoCats);
+    API.set('bv_products', demoProducts);
+    API.set('bv_collage_config', demoCollage);
+    API.set('bv_settings', demoSettings);
+    API.set('bv_demo_installed_v2', true); 
 }
 
-// Завантажуємо дані з пам'яті
-let categoriesTree = JSON.parse(localStorage.getItem('bv_categories_tree')) || [];
-let products = JSON.parse(localStorage.getItem('bv_products')) || [];
+let categoriesTree = API.get('bv_categories_tree', []);
+let products = API.get('bv_products', []);
 
-// Автоматичні іконки для категорій
 function getCategoryIconSVG(catId) {
     const id = catId.toLowerCase();
-    if (id.includes('ring')) return `<circle cx="12" cy="15" r="5"/><path d="M12 10l-2-3h4l-2 3z"/>`; // Каблучка
-    if (id.includes('earring')) return `<circle cx="12" cy="16" r="3"/><path d="M12 4v9"/><path d="M9 4h6"/>`; // Сережка
-    if (id.includes('chain') || id.includes('neck')) return `<circle cx="8" cy="12" r="3"/><circle cx="16" cy="12" r="3"/><path d="M11 12h2"/>`; // Ланцюжок
-    if (id.includes('bracelet')) return `<ellipse cx="12" cy="12" rx="7" ry="3"/><path d="M5 12v2c0 2 3 3 7 3s7-1 7-3v-2"/>`; // Браслет
-    if (id.includes('cross')) return `<path d="M12 4v16"/><path d="M8 9h8"/>`; // Хрестик
-    return `<circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/>`; // Стандартна іконка
+    if (id.includes('ring')) return `<circle cx="12" cy="15" r="5"/><path d="M12 10l-2-3h4l-2 3z"/>`; 
+    if (id.includes('earring')) return `<circle cx="12" cy="16" r="3"/><path d="M12 4v9"/><path d="M9 4h6"/>`; 
+    if (id.includes('chain') || id.includes('neck')) return `<circle cx="8" cy="12" r="3"/><circle cx="16" cy="12" r="3"/><path d="M11 12h2"/>`; 
+    if (id.includes('bracelet')) return `<ellipse cx="12" cy="12" rx="7" ry="3"/><path d="M5 12v2c0 2 3 3 7 3s7-1 7-3v-2"/>`; 
+    if (id.includes('cross')) return `<path d="M12 4v16"/><path d="M8 9h8"/>`; 
+    return `<circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/>`; 
 }
 
 // ==========================================
-// 3. ГЛОБАЛЬНІ ФУНКЦІЇ ІНТЕРФЕЙСУ
+// 3.1 ГЕНЕРАТОР ТЕСТОВИХ ТОВАРІВ (+1000 шт)
+// ==========================================
+// Цей блок додає масив товарів для перевірки кнопки "Показати ще" та стрілки "Наверх"
+if (products.length > 0 && products.length < 500) {
+    const categories = ['rings', 'earrings', 'chains', 'bracelets', 'crosses'];
+    const metals = ['Біле золото 585', 'Червоне золото 585', 'Срібло 925'];
+    
+    for (let i = 1; i <= 1000; i++) {
+        const randomCat = categories[Math.floor(Math.random() * categories.length)];
+        const randomMat = metals[Math.floor(Math.random() * metals.length)];
+        const price = Math.floor(Math.random() * 40000) + 2000;
+        
+        products.push({
+            id: `test_${i}`,
+            name: `Ювелірний виріб #${i}`,
+            variant: randomMat,
+            category: randomCat,
+            subcategory: '',
+            price: price,
+            discount: '', 
+            status: 'in-stock',
+            badge: i % 50 === 0 ? 'new' : 'none',
+            img: `https://placehold.co/600x600/1a1a1a/c5a059?text=Product+${i}`,
+            desc: "Тестовий товар для перевірки пагінації каталогу по 100 одиниць."
+        });
+    }
+    // Оновлюємо API, щоб дані збереглися
+    API.set('bv_products', products);
+    console.log("Додано 1000 тестових товарів для перевірки пагінації.");
+}
+
+// ==========================================
+// ТАКОЖ: Оновлюємо функцію changeLang у секції 4
+// Додаємо виклик renderBatch для каталогу
+// ==========================================
+const originalChangeLang = window.changeLang;
+window.changeLang = function(lang) {
+    // Викликаємо оригінальну логіку
+    if (typeof originalChangeLang === 'function') {
+        // Якщо функція вже була визначена вище, вона виконається
+    }
+    
+    // Специфічне оновлення для нашого каталогу з пагінацією
+    if (typeof window.renderCatalogBatch === 'function') {
+        // Ми не робимо reset:true, щоб користувач не втратив позицію скролу, 
+        // просто перемальовуємо поточну пачку з новою мовою
+        window.renderCatalogBatch(); 
+    }
+};
+
+// ==========================================
+// 4. ГЛОБАЛЬНІ ФУНКЦІЇ ІНТЕРФЕЙСУ
 // ==========================================
 window.toggleMenu = function() {
     const burger = document.getElementById('burger');
@@ -129,7 +209,7 @@ window.toggleTheme = function() {
     const html = document.documentElement;
     const newTheme = html.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
     html.setAttribute('data-theme', newTheme);
-    localStorage.setItem('bv_theme', newTheme);
+    API.set('bv_theme', newTheme);
     const icon = document.getElementById('themeIcon');
     if(icon) icon.innerHTML = newTheme === 'light' ? sunSVG : moonSVG;
 };
@@ -147,59 +227,58 @@ window.changeLang = function(lang) {
     
     document.querySelectorAll('[data-i18n]').forEach(el => el.innerHTML = i18n[lang][el.dataset.i18n] || el.innerHTML);
     document.querySelectorAll('[data-i18n-placeholder]').forEach(el => el.placeholder = i18n[lang][el.dataset.i18nPlaceholder] || el.placeholder);
-    localStorage.setItem('bv_lang', lang);
+    API.set('bv_lang', lang);
     
     window.renderCart();
+    window.renderFavDrawer();
+    
+    // Перерендер товарів для оновлення перекладу статусів/кнопок
+    if(document.getElementById('specialGrid') && typeof renderHomeSections === 'function') renderHomeSections();
+    if(document.getElementById('productGrid') && typeof renderCatalogBatch === 'function') renderCatalogBatch(); 
+    if(document.getElementById('productContainer') && typeof renderProductPage === 'function') renderProductPage();
     
     const mobLangList = document.getElementById('mobLangList');
     if(mobLangList && mobLangList.classList.contains('open')) window.toggleAccordion('mobLangList', 'mobLangArrow');
 };
 
 // ==========================================
-// 4. РОБОТА КОШИКА
+// 5. КОШИК ТА УЛЮБЛЕНЕ (Drawers)
 // ==========================================
-let cart = JSON.parse(localStorage.getItem('bv_cart')) || [];
-
-window.addToCart = function(id, title, variant, price, img) {
-    const existingItem = cart.find(item => item.id === id);
-    if (existingItem) existingItem.qty += 1;
-    else cart.push({ id, title, variant, price, img, qty: 1 });
-    window.renderCart();
-    if (!document.getElementById('cartDrawer').classList.contains('active')) window.toggleCart();
-};
-
-window.removeFromCart = function(id) {
-    cart = cart.filter(item => item.id !== id);
-    window.renderCart();
-};
-
 window.toggleCart = function() {
     const drawer = document.getElementById('cartDrawer');
     const overlay = document.getElementById('cartOverlay');
     if (!drawer || !overlay) return;
 
-    const isOpening = !drawer.classList.contains('active');
-
-    if (isOpening) {
-        drawer.classList.add('active');
-        overlay.classList.add('active');
+    if (!drawer.classList.contains('active')) {
+        drawer.classList.add('active'); overlay.classList.add('active');
         document.body.style.overflow = 'hidden';
-        document.documentElement.style.overflow = 'hidden';
     } else {
-        drawer.classList.remove('active');
-        overlay.classList.remove('active');
-        const sideMenu = document.getElementById('sideMenu');
-        if (!sideMenu || !sideMenu.classList.contains('active')) {
-            document.body.style.overflow = '';
-            document.documentElement.style.overflow = '';
-        }
+        drawer.classList.remove('active'); overlay.classList.remove('active');
+        if (!document.getElementById('sideMenu')?.classList.contains('active')) document.body.style.overflow = '';
     }
 };
 
+window.addToCart = function(id, title, variant, price, img) {
+    let cart = API.get('bv_cart', []);
+    const existing = cart.find(item => item.id === id);
+    if (existing) existing.qty += 1;
+    else cart.push({ id, title, variant, price, img, qty: 1 });
+    API.set('bv_cart', cart);
+    window.renderCart();
+    if (!document.getElementById('cartDrawer').classList.contains('active')) window.toggleCart();
+};
+
+window.removeFromCart = function(id) {
+    let cart = API.get('bv_cart', []);
+    cart = cart.filter(item => item.id !== id);
+    API.set('bv_cart', cart);
+    window.renderCart();
+};
+
 window.renderCart = function() {
-    localStorage.setItem('bv_cart', JSON.stringify(cart));
+    let cart = API.get('bv_cart', []);
     const cartBody = document.getElementById('cartBody');
-    const cartBadges = document.querySelectorAll('.cart-badge');
+    const cartBadges = document.querySelectorAll('.cart-badge:not(.fav-badge)');
     const subtotalVal = document.querySelector('.cart-subtotal-val');
     let total = 0, totalQty = 0;
     
@@ -207,8 +286,8 @@ window.renderCart = function() {
     cartBody.innerHTML = '';
 
     if (cart.length === 0) {
-        const lang = localStorage.getItem('bv_lang') || 'uk';
-        cartBody.innerHTML = `<div class="cart-empty-msg">${i18n[lang].cart_empty}</div>`;
+        const lang = API.get('bv_lang', 'uk');
+        cartBody.innerHTML = `<div class="cart-empty-msg text-center text-[var(--text-muted)] mt-10">${i18n[lang].cart_empty}</div>`;
         if(subtotalVal) subtotalVal.innerText = formatterPrice.format(0);
         cartBadges.forEach(b => b.innerText = '0');
         return;
@@ -218,15 +297,15 @@ window.renderCart = function() {
         total += item.price * item.qty;
         totalQty += item.qty;
         cartBody.insertAdjacentHTML('beforeend', `
-            <div class="cart-item">
-                <img src="${item.img}" class="cart-item-img">
-                <div class="cart-item-info">
-                    <span class="cart-item-title">${item.title}</span>
-                    <span class="cart-item-variant">${item.variant}</span>
-                    <span class="cart-item-price">${formatterPrice.format(item.price)} <span style="font-size:10px; color:gray; font-weight:normal;">x${item.qty}</span></span>
+            <div class="cart-item flex gap-4 p-3 bg-white/5 border border-white/10 rounded-xl mb-3">
+                <img src="${item.img}" class="w-20 h-20 object-cover rounded-lg border border-white/10">
+                <div class="flex-grow flex flex-col justify-center">
+                    <span class="text-sm font-semibold uppercase tracking-wide leading-tight">${item.title}</span>
+                    <span class="text-xs text-[var(--text-muted)] mt-1">${item.variant}</span>
+                    <span class="text-sm font-bold text-[var(--gold-muted)] mt-2">${formatterPrice.format(item.price)} <span class="text-[10px] text-gray-400 font-normal">x${item.qty}</span></span>
                 </div>
-                <button class="cart-item-remove" onclick="removeFromCart('${item.id}')">
-                    <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                <button class="text-[var(--text-muted)] hover:text-red-500 transition p-2" onclick="removeFromCart('${item.id}')">
+                    <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" fill="none" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                 </button>
             </div>
         `);
@@ -235,8 +314,236 @@ window.renderCart = function() {
     cartBadges.forEach(b => b.innerText = totalQty);
 };
 
+window.toggleFavDrawer = function() {
+    const drawer = document.getElementById('favDrawer');
+    const overlay = document.getElementById('favOverlay');
+    if (!drawer) return;
+
+    if (!drawer.classList.contains('active')) {
+        window.renderFavDrawer();
+        drawer.classList.add('active'); 
+        if(overlay) overlay.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    } else {
+        drawer.classList.remove('active'); 
+        if(overlay) overlay.classList.remove('active');
+        if (!document.getElementById('sideMenu')?.classList.contains('active')) document.body.style.overflow = '';
+    }
+};
+
+window.toggleFav = function(id) {
+    let favs = API.get('bv_favs', []);
+    const idx = favs.indexOf(id);
+    if(idx > -1) favs.splice(idx, 1); else favs.push(id);
+    API.set('bv_favs', favs);
+    
+    // Оновлюємо іконки всюди, де є ця кнопка
+    document.querySelectorAll(`.fav-btn-inline[data-id="${id}"]`).forEach(btn => {
+        if(favs.includes(id)) {
+            btn.classList.add('text-red-500');
+            btn.classList.remove('text-gray-400', 'text-gray-500', 'border-white/20');
+            if(btn.id === 'pd-fav-btn') btn.classList.add('border-red-500'); // Для сторінки товару
+            btn.querySelector('svg').setAttribute('fill', 'currentColor');
+        } else {
+            btn.classList.remove('text-red-500', 'border-red-500');
+            btn.classList.add('text-gray-400');
+            if(btn.id === 'pd-fav-btn') btn.classList.add('border-white/20');
+            btn.querySelector('svg').setAttribute('fill', 'none');
+        }
+    });
+    
+    window.renderFavDrawer();
+};
+
+window.renderFavDrawer = function() {
+    let favsIds = API.get('bv_favs', []);
+    const allProducts = API.get('bv_products', []);
+    const favBody = document.getElementById('favBody');
+    const favBadges = document.querySelectorAll('.fav-badge');
+    
+    favBadges.forEach(b => b.innerText = favsIds.length);
+    if(!favBody) return;
+
+    if (favsIds.length === 0) {
+        const lang = API.get('bv_lang', 'uk');
+        favBody.innerHTML = `<div class="text-center text-[var(--text-muted)] mt-10" data-i18n="fav_empty">${i18n[lang].fav_empty || "Список порожній"}</div>`;
+        return;
+    }
+
+    const favProducts = allProducts.filter(p => favsIds.includes(p.id));
+    
+    favBody.innerHTML = favProducts.map(prod => `
+        <div class="cart-item flex gap-4 p-3 bg-white/5 border border-white/10 rounded-xl mb-3 relative pr-10 hover:bg-white/10 transition">
+            <img src="${prod.img}" class="w-16 h-16 object-cover rounded-lg border border-white/10 cursor-pointer" onclick="location.href='product.html?id=${prod.id}'">
+            <div class="flex-grow flex flex-col justify-center cursor-pointer" onclick="location.href='product.html?id=${prod.id}'">
+                <span class="text-xs font-semibold uppercase tracking-wide line-clamp-1">${prod.name}</span>
+                <span class="text-[10px] text-[var(--text-muted)] mt-1">${prod.variant}</span>
+                <span class="text-sm font-bold text-[var(--gold-muted)] mt-1">${formatterPrice.format(prod.discount || prod.price)}</span>
+            </div>
+            <button class="absolute top-3 right-3 text-[var(--text-muted)] hover:text-red-500 transition" onclick="toggleFav('${prod.id}')" title="Видалити">
+                <svg width="18" height="18" fill="currentColor" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+            </button>
+        </div>
+    `).join('');
+};
+
 // ==========================================
-// 5. ДИНАМІЧНА ГЕНЕРАЦІЯ МЕНЮ ТА КОЛАЖУ
+// 6. ГЛОБАЛЬНИЙ РЕНДЕР КАРТКИ ТОВАРУ
+// ==========================================
+window.renderProductCard = function(prod) {
+    const lang = API.get('bv_lang', 'uk');
+    const isOutOfStock = prod.status === 'out-stock';
+    const isPreOrder = prod.status === 'pre-order';
+    const isFav = API.get('bv_favs', []).includes(prod.id);
+    
+    let badgesHtml = '<div class="absolute top-3 left-3 flex flex-col gap-1 z-10">';
+    if (isOutOfStock) badgesHtml += `<div class="bg-red-500/90 text-white text-[9px] px-2 py-1 rounded uppercase tracking-widest font-bold backdrop-blur-sm shadow-md">Sold Out</div>`;
+    else if (isPreOrder) badgesHtml += `<div class="bg-gray-500/90 text-white text-[9px] px-2 py-1 rounded uppercase tracking-widest font-bold backdrop-blur-sm shadow-md">Під замовлення</div>`;
+
+    if(prod.badge === 'new') badgesHtml += '<div class="bg-blue-500/90 text-white text-[9px] px-2 py-1 rounded uppercase tracking-widest font-bold backdrop-blur-sm shadow-md">Новинка</div>';
+    if(prod.badge === 'exclusive') badgesHtml += '<div class="bg-purple-500/90 text-white text-[9px] px-2 py-1 rounded uppercase tracking-widest font-bold backdrop-blur-sm shadow-md">Ексклюзив</div>';
+    if(prod.badge === 'sale') badgesHtml += '<div class="bg-rose-500/90 text-white text-[9px] px-2 py-1 rounded uppercase tracking-widest font-bold backdrop-blur-sm shadow-md">Sale</div>';
+    badgesHtml += '</div>';
+
+    let priceHtml = `<span class="text-[14px] md:text-[16px] font-bold text-[var(--gold-muted)]">${formatterPrice.format(prod.price)}</span>`;
+    if (prod.discount && Number(prod.discount) > 0) {
+        priceHtml = `<span class="text-[14px] md:text-[16px] font-bold text-[var(--success)]">${formatterPrice.format(prod.price)}</span><span class="text-[10px] md:text-[12px] text-[var(--text-muted)] line-through ml-2">${formatterPrice.format(prod.discount)}</span>`;
+    }
+
+    return `
+        <div class="product-card group relative bg-[var(--bg-card)] border border-[var(--border)] rounded-2xl overflow-hidden transition-transform duration-300 hover:-translate-y-1 hover:shadow-lg flex flex-col">
+            ${badgesHtml}
+            
+            <a href="product.html?id=${prod.id}" class="relative w-full aspect-square overflow-hidden bg-black block">
+                <img src="${prod.img}" class="product-img opacity-90 transition duration-700 group-hover:scale-105 group-hover:opacity-100" loading="lazy">
+            </a>
+            
+            <div class="p-3 md:p-4 flex flex-col gap-1 flex-grow">
+                <a href="product.html?id=${prod.id}" class="text-[9px] md:text-[10px] uppercase tracking-widest text-[var(--text-muted)] hover:text-[var(--gold-muted)] transition">${prod.variant}</a>
+                <a href="product.html?id=${prod.id}" class="text-[13px] md:text-[15px] font-medium text-[var(--text-main)] leading-snug hover:text-[var(--gold-muted)] transition line-clamp-2">${prod.name}</a>
+                <div class="mt-2 mb-2 flex items-center">${priceHtml}</div>
+            </div>
+
+            <div class="px-3 md:px-4 py-3 border-t border-white/5 flex justify-between items-center mt-auto">
+                ${!isOutOfStock ? `
+                <button onclick="addToCart('${prod.id}', '${prod.name}', '${prod.variant}', ${prod.price}, '${prod.img}')" class="flex items-center gap-2 text-[10px] md:text-[11px] font-bold uppercase tracking-widest text-[var(--text-main)] hover:text-[var(--gold-muted)] transition group/btn">
+                    <span>${i18n[lang].btn_buy}</span>
+                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" class="transition-transform group-hover/btn:translate-x-1"><path d="M12 4v16m8-8H4"/></svg>
+                </button>
+                ` : `<span class="text-[9px] md:text-[10px] font-bold uppercase tracking-widest text-gray-500">${i18n[lang].out_stock}</span>`}
+                
+                <button class="fav-btn-inline ${isFav ? 'text-red-500' : 'text-gray-400 hover:text-white'} transition" data-id="${prod.id}" onclick="toggleFav('${prod.id}')" title="Улюблене">
+                    <svg width="18" height="18" fill="${isFav ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+                </button>
+            </div>
+        </div>
+    `;
+};
+
+// ==========================================
+// 7. СТОРІНКА ТОВАРУ (product.html)
+// ==========================================
+window.renderProductPage = function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const productId = urlParams.get('id');
+    
+    // Захист: якщо немає ID, перекидаємо на головну або каталог
+    if(!productId) {
+        window.location.href = 'index.html';
+        return;
+    }
+
+    const allProducts = API.get('bv_products', []);
+    const product = allProducts.find(p => p.id === productId);
+    
+    if(!product) {
+        const container = document.getElementById('productContainer');
+        if(container) container.innerHTML = `<div class="text-center py-32 text-2xl font-serif text-[var(--gold-muted)]">Товар не знайдено або він був видалений</div><div class="text-center mt-6"><a href="index.html" class="btn-order">На головну</a></div>`;
+        return;
+    }
+
+    document.title = `${product.name} | BV Jewelry`;
+    const lang = API.get('bv_lang', 'uk');
+
+    const imgEl = document.getElementById('pd-img');
+    const badgeEl = document.getElementById('pd-badges');
+    const titleEl = document.getElementById('pd-title');
+    const variantEl = document.getElementById('pd-variant');
+    const priceEl = document.getElementById('pd-price');
+    const statusEl = document.getElementById('pd-status');
+    const descEl = document.getElementById('pd-desc');
+    const addBtn = document.getElementById('pd-add-btn');
+    const favBtn = document.getElementById('pd-fav-btn');
+
+    if(imgEl) imgEl.src = product.img;
+    if(titleEl) titleEl.innerText = product.name;
+    if(variantEl) variantEl.innerText = product.variant;
+    if(descEl) descEl.innerText = product.desc || "Опис відсутній.";
+    
+    if(priceEl) {
+        if (product.discount && Number(product.discount) > 0) {
+            priceEl.innerHTML = `<span class="text-3xl font-bold text-[var(--success)]">${formatterPrice.format(product.price)}</span> <span class="text-lg text-[var(--text-muted)] line-through ml-3">${formatterPrice.format(product.discount)}</span>`;
+        } else {
+            priceEl.innerHTML = `<span class="text-3xl font-bold text-[var(--gold-muted)]">${formatterPrice.format(product.price)}</span>`;
+        }
+    }
+
+    if(statusEl) {
+        if(product.status === 'out-stock') {
+            statusEl.innerHTML = `<span class="text-red-500 font-bold uppercase tracking-widest text-xs border border-red-500 px-3 py-1 rounded inline-block">${i18n[lang].out_stock}</span>`;
+            if(addBtn) {
+                addBtn.style.opacity = '0.5';
+                addBtn.style.cursor = 'not-allowed';
+                addBtn.onclick = (e) => e.preventDefault();
+                addBtn.querySelector('span').innerText = 'Немає в наявності';
+            }
+        } else if (product.status === 'pre-order') {
+            statusEl.innerHTML = `<span class="text-gray-400 font-bold uppercase tracking-widest text-xs border border-gray-400 px-3 py-1 rounded inline-block">${i18n[lang].pre_order}</span>`;
+            if(addBtn) setupAddToCartBtn(addBtn, product, lang);
+        } else {
+            statusEl.innerHTML = `<span class="text-green-500 font-bold uppercase tracking-widest text-xs border border-green-500 px-3 py-1 rounded inline-block">${i18n[lang].in_stock}</span>`;
+            if(addBtn) setupAddToCartBtn(addBtn, product, lang);
+        }
+    }
+
+    if(badgeEl && product.badge !== 'none') {
+        let text = product.badge === 'new' ? 'Новинка' : (product.badge === 'sale' ? 'Sale' : 'Ексклюзив');
+        let bgClass = product.badge === 'new' ? 'bg-blue-500' : (product.badge === 'sale' ? 'bg-red-500' : 'bg-purple-500');
+        badgeEl.innerHTML = `<div class="${bgClass} text-white text-[10px] px-3 py-1 rounded uppercase tracking-widest font-bold inline-block">${text}</div>`;
+    }
+
+    if(favBtn) {
+        favBtn.setAttribute('data-id', product.id);
+        favBtn.classList.add('fav-btn-inline');
+        
+        const isFav = API.get('bv_favs', []).includes(product.id);
+        if(isFav) {
+            favBtn.classList.add('text-red-500', 'border-red-500');
+            favBtn.classList.remove('text-gray-400', 'border-white/20');
+            favBtn.querySelector('svg').setAttribute('fill', 'currentColor');
+        }
+        favBtn.onclick = () => toggleFav(product.id);
+    }
+
+    // Рендер сітки "Також рекомендуємо"
+    const similarGrid = document.getElementById('similarGrid');
+    if(similarGrid) {
+        const similar = allProducts.filter(p => p.category === product.category && p.id !== product.id).slice(0, 6);
+        if(similar.length > 0) {
+            similarGrid.innerHTML = similar.map(renderProductCard).join('');
+        } else {
+            document.getElementById('similarSection').style.display = 'none';
+        }
+    }
+};
+
+function setupAddToCartBtn(btn, product, lang) {
+    btn.onclick = () => addToCart(product.id, product.name, product.variant, product.price, product.img);
+    btn.querySelector('span').innerText = i18n[lang].btn_buy;
+}
+
+// ==========================================
+// 8. ДИНАМІЧНА ГЕНЕРАЦІЯ МЕНЮ ТА КОЛАЖУ
 // ==========================================
 function generateMenus() {
     const megaCol1 = document.querySelector('.mega-col-1');
@@ -274,7 +581,6 @@ function generateMenus() {
 
         megaCol1.innerHTML += `<a href="exclusive.html" class="mega-atelier-btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19l7-7-7-7M5 12h14"/></svg><span data-i18n="m_atelier">Замовити ексклюзив</span></a>`;
         
-        // Ховер для товарів
         document.querySelectorAll('.mega-cat-item').forEach(item => {
             item.addEventListener('mouseenter', () => {
                 document.querySelectorAll('.mega-cat-item').forEach(i => i.classList.remove('active'));
@@ -293,7 +599,7 @@ function generateMenus() {
                     } else if (featured.length === 1) {
                         const f = featured[0];
                         megaCol3.innerHTML = `
-                            <a href="catalog.html#${f.category}" class="preview-card">
+                            <a href="product.html?id=${f.id}" class="preview-card">
                                 <div class="preview-img-wrap"><img src="${f.img}"></div>
                                 <div class="preview-info">
                                     <span class="preview-title mt-2">${f.name}</span>
@@ -323,7 +629,6 @@ function generateMenus() {
                 }
             });
         });
-
         const firstCat = document.querySelector('.mega-cat-item');
         if(firstCat) firstCat.dispatchEvent(new Event('mouseenter'));
     }
@@ -375,7 +680,12 @@ function generateMenus() {
                 </div>
             </div>
 
+            <a href="#" class="mob-menu-title" onclick="event.preventDefault(); window.toggleMenu(); window.toggleFavDrawer();">
+                <span data-i18n="fav_title">Улюблене</span>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.7 0l-1.1 1-1.1-1a5.5 5.5 0 0 0-7.7 7.8l1.1 1 7.7 7.8 7.7-7.8 1.1-1a5.5 5.5 0 0 0 0-7.8z"/></svg>
+            </a>
             <a href="#footer" data-i18n="m4" class="mob-menu-title" onclick="window.toggleMenu()">Контакти</a>
+
             <div class="menu-divider"></div>
 
             <div class="mobile-settings-group">
@@ -398,27 +708,9 @@ function generateMenus() {
                     <svg viewBox="0 0 24 24" style="width: 20px; height: 20px;"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
                     <span data-i18n="theme_mob">Змінити тему</span>
                 </div>
-
-                <div>
-                    <div class="mob-menu-title" onclick="window.toggleAccordion('mobUserList', 'mobUserArrow')" style="font-size: 15px;">
-                        <div style="display: flex; align-items: center; gap: 12px;">
-                            <svg viewBox="0 0 24 24" style="width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 1.5;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-                            <span data-i18n="login_mob_title">КАБІНЕТ</span>
-                        </div>
-                        <svg id="mobUserArrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--gold-muted)" stroke-width="2" class="transition-transform duration-300"><path d="M6 9l6 6 6-6"/></svg>
-                    </div>
-                    <div class="mob-accordion-list" id="mobUserList" style="margin-top: 10px;">
-                        <a href="#login" class="dropdown-item" data-i18n="login" onclick="window.toggleMenu()">Увійти</a>
-                        <div class="border-t border-[var(--border)] my-2"></div>
-                        <a href="admin.html" class="dropdown-item" style="color: var(--gold-muted); opacity: 1; padding: 10px 20px;">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="mr-2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-                            Адмін-панель
-                        </a>
-                    </div>
-                </div>
             </div>
         `;
-        const savedLang = localStorage.getItem('bv_lang') || 'uk';
+        const savedLang = API.get('bv_lang', 'uk');
         document.querySelectorAll('[data-i18n]').forEach(el => el.innerHTML = i18n[savedLang][el.dataset.i18n] || el.innerHTML);
     }
 }
@@ -474,13 +766,11 @@ window.renderHomeCollage = function() {
     const collage = document.getElementById('art-collage');
     if (!collage) return;
     
-    const config = JSON.parse(localStorage.getItem('bv_collage_config')) || { template: 'grid-6', items: [] };
+    const config = API.get('bv_collage_config', { template: 'grid-6', items: [] });
     collage.innerHTML = '';
     collage.className = 'art-collage ' + config.template;
     
-    const itemsToRender = config.items;
-
-    itemsToRender.forEach((item, index) => {
+    config.items.forEach((item, index) => {
         let gClass = 't-earrings'; 
         if(config.template === 'grid-6') {
             const classes = ['t-rings', 't-earrings', 't-bracelets', 't-neck', 't-wedding', 't-crosses'];
@@ -501,8 +791,18 @@ window.renderHomeCollage = function() {
     document.querySelectorAll('.collage-tile').forEach(el => observer.observe(el));
 };
 
-function () {
-    const settings = JSON.parse(localStorage.getItem('bv_settings'));
+// СЕКЦІЇ ТОВАРІВ НА ГОЛОВНІЙ
+window.renderHomeSections = function() {
+    if(document.getElementById('specialGrid')) {
+        document.getElementById('specialGrid').innerHTML = products.filter(p => p.isSpecial).slice(0, 8).map(window.renderProductCard).join('');
+    }
+    if(document.getElementById('weeklyGrid')) {
+        document.getElementById('weeklyGrid').innerHTML = products.filter(p => p.isWeekly).slice(0, 8).map(window.renderProductCard).join('');
+    }
+};
+
+window.applyAdminSettings = function() {
+    const settings = API.get('bv_settings', null);
     if (settings) {
         const heroBg = document.querySelector('.hero-img-bg');
         if (heroBg && settings.heroBg) heroBg.style.backgroundImage = `url('${settings.heroBg}')`;
@@ -518,20 +818,28 @@ function () {
         if(settings.map2) { const link = document.querySelector('.addr-link-2'); if(link) link.href = settings.map2; }
         if(settings.addr2) { const txt = document.querySelector('.addr-text-2'); if(txt) txt.innerText = settings.addr2; }
     }
-}
+};
 
 // ==========================================
-// 6. ІНІЦІАЛІЗАЦІЯ ПРИ ЗАВАНТАЖЕННІ
+// 9. ІНІЦІАЛІЗАЦІЯ ПРИ ЗАВАНТАЖЕННІ
 // ==========================================
 window.onload = () => { 
     if(typeof generateMenus === 'function') generateMenus();
     if(typeof initMarquee === 'function') initMarquee();
     if(typeof renderHomeCollage === 'function') renderHomeCollage();
     
-    const savedLang = localStorage.getItem('bv_lang') || 'uk';
+    // Рендер сіток для головної сторінки
+    renderHomeSections();
+
+    // Перевірка та рендер сторінки товару (якщо ми на product.html)
+    if(document.getElementById('productContainer') && typeof renderProductPage === 'function') {
+        renderProductPage();
+    }
+
+    const savedLang = API.get('bv_lang', 'uk');
     window.changeLang(savedLang);
 
-    const savedTheme = localStorage.getItem('bv_theme') || 'dark';
+    const savedTheme = API.get('bv_theme', 'dark');
     document.documentElement.setAttribute('data-theme', savedTheme);
     const icon = document.getElementById('themeIcon');
     if(icon) icon.innerHTML = savedTheme === 'light' ? sunSVG : moonSVG;
@@ -539,8 +847,9 @@ window.onload = () => {
     const yearEl = document.getElementById('currentYear');
     if(yearEl) yearEl.textContent = new Date().getFullYear();
 
-    if(typeof window.renderCart === 'function') window.renderCart(); 
-    if(typeof applyAdminSettings === 'function') applyAdminSettings(); 
+    window.renderCart(); 
+    window.renderFavDrawer();
+    window.applyAdminSettings(); 
 
     const burgerBtn = document.getElementById('burger');
     if(burgerBtn) {
@@ -558,3 +867,4 @@ window.onscroll = () => {
 
 if(document.getElementById('overlay')) document.getElementById('overlay').onclick = window.toggleMenu;
 if(document.getElementById('cartOverlay')) document.getElementById('cartOverlay').onclick = window.toggleCart;
+if(document.getElementById('favOverlay')) document.getElementById('favOverlay').onclick = window.toggleFavDrawer;
